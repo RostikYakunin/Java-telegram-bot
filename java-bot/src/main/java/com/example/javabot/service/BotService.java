@@ -17,6 +17,7 @@ import java.util.List;
 @Component
 public class BotService extends TelegramLongPollingBot {
     private SendDocument sendDocument;
+    private SendMessage messageForMe;
 
     @Override
     public String getBotUsername() {
@@ -34,15 +35,13 @@ public class BotService extends TelegramLongPollingBot {
         Message messageFromUser = update.getMessage();
 
         sendMessage.setChatId(String.valueOf(messageFromUser.getChatId()));
-        sendMessage.setText("Привіт " + messageFromUser.getChat().getUserName() + " ми отримали твоє повідомлення: "
-                + messageFromUser.getText() + "\n" + "Ви скоро отримаєте нашу відповідь)");
 
         // action in start
         if (messageFromUser.getText().equals("/start")) {
 
             String helloText = "Привіт " + messageFromUser.getFrom().getFirstName() + " " + " мене зовуть FreshBot і я радий вас привітати))) \n"
-                    + "На даний час я можу вам надати: \n" +
-                    "1. Каталог товарів у форматі PDF \n" +
+                    + "На даний час я можу вам надати: \n \n" +
+                    "1. Каталог товарів \n" +
                     "2. Посилання на інстаграм \n" +
                     "3. Контакти \n" +
                     "4. Акції \n \n";
@@ -56,7 +55,7 @@ public class BotService extends TelegramLongPollingBot {
         }
 
         // button action list products
-        if (messageFromUser.getText().equals("Каталог товарів")) {
+        else if (messageFromUser.getText().equals("Каталог товарів")) {
 
 //            File file = new File("D:\\DownloadFromInternet\\java-bot\\java-bot\\src\\main\\resources\\instructions.pdf");
 //            InputFile inputFile = new InputFile(file, "docFileForFresh");
@@ -87,11 +86,18 @@ public class BotService extends TelegramLongPollingBot {
 
         // any other message
         else {
-            System.out.println("==================================================" +
+            sendMessage.setText("Привіт " + messageFromUser.getChat().getUserName() + " ми отримали твоє повідомлення: "
+                    + messageFromUser.getText() + "\n" + "Ви скоро отримаєте нашу відповідь)");
+
+            String text = ("==================================================" +
                     "\n You have got a message: " + messageFromUser.getText() +
                     "\n from user: " + messageFromUser.getFrom().getUserName() +
-                    "\n message`s time:" + Instant.now() +
+                    "\n message`s time: " + Instant.now() +
                     "\n==================================================");
+
+            messageForMe = new SendMessage();
+            messageForMe.setChatId(String.valueOf(5699067150L));
+            messageForMe.setText(text);
         }
 
         // only execute
@@ -100,6 +106,9 @@ public class BotService extends TelegramLongPollingBot {
                 execute(sendDocument);
             } else {
                 execute(sendMessage);
+                if (messageForMe != null) {
+                    execute(messageForMe);
+                }
             }
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
