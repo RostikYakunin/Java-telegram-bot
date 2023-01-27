@@ -19,7 +19,6 @@ import java.util.List;
 
 @Component
 public class BotService extends TelegramLongPollingBot {
-    private SendDocument sendDocument;
     private SendMessage messageForMe;
 
     @Override
@@ -59,12 +58,6 @@ public class BotService extends TelegramLongPollingBot {
 
         // button action list products
         else if (messageFromUser.getText().equals("Каталог товарів")) {
-
-//            File file = new File("D:\\DownloadFromInternet\\java-bot\\java-bot\\src\\main\\resources\\instructions.pdf");
-//            InputFile inputFile = new InputFile(file, "docFileForFresh");
-//            sendDocument = new SendDocument(String.valueOf(message.getChatId()), inputFile);
-
-//            sendMessage.setText("https://sites.google.com/view/freshgreenery-pp-ua/");
             sendMessage.setText("Перейдіть по посиланню вказаному нижче");
             sendMessage.setReplyMarkup(getInlineKeyboard());
         }
@@ -110,14 +103,11 @@ public class BotService extends TelegramLongPollingBot {
 
         // only execute
         try {
-            if (sendDocument != null) {
-                execute(sendDocument);
-            } else {
-                execute(sendMessage);
-                if (messageForMe != null) {
-                    execute(messageForMe);
-                }
+            execute(sendMessage);
+            if (messageForMe != null) {
+                execute(messageForMe);
             }
+
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
@@ -153,9 +143,9 @@ public class BotService extends TelegramLongPollingBot {
         return replyKeyboardMarkup;
     }
 
-    private InlineKeyboardMarkup getInlineKeyboard () {
+    private InlineKeyboardMarkup getInlineKeyboard() {
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List <InlineKeyboardButton> inlineKeyboardButtonList = new ArrayList<>();
+        List<InlineKeyboardButton> inlineKeyboardButtonList = new ArrayList<>();
 
         InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton("Перейти до каталогу");
         inlineKeyboardButton.setUrl("https://sites.google.com/view/freshgreenery-pp-ua/");
