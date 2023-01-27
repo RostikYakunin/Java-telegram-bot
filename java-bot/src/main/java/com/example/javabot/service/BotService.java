@@ -6,12 +6,15 @@ import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -61,7 +64,9 @@ public class BotService extends TelegramLongPollingBot {
 //            InputFile inputFile = new InputFile(file, "docFileForFresh");
 //            sendDocument = new SendDocument(String.valueOf(message.getChatId()), inputFile);
 
-            sendMessage.setText("Вибач мене, але цей розділ знаходиться у стані розробки....");
+//            sendMessage.setText("https://sites.google.com/view/freshgreenery-pp-ua/");
+            sendMessage.setText("Перейдіть по посиланню вказаному нижче");
+            sendMessage.setReplyMarkup(getInlineKeyboard());
         }
 
         // button action list products
@@ -86,12 +91,15 @@ public class BotService extends TelegramLongPollingBot {
 
         // any other message
         else {
-            sendMessage.setText("Привіт " + messageFromUser.getChat().getUserName() + " ми отримали твоє повідомлення: "
-                    + messageFromUser.getText() + "\n" + "Ви скоро отримаєте нашу відповідь)");
+            sendMessage.setText("Привіт " + messageFromUser.getFrom().getFirstName() + " ми отримали твоє повідомлення: "
+                    + messageFromUser.getText() + "\n" + "Ви скоро отримаєте відповідь від адміна)");
 
             String text = ("==================================================" +
                     "\n You have got a message: " + messageFromUser.getText() +
                     "\n from user: " + messageFromUser.getFrom().getUserName() +
+                    "\n first name: " + messageFromUser.getFrom().getFirstName() +
+                    "\n last name: " + messageFromUser.getFrom().getLastName() +
+                    "\n user`s id: " + messageFromUser.getFrom().getId() +
                     "\n message`s time: " + Instant.now() +
                     "\n==================================================");
 
@@ -144,4 +152,19 @@ public class BotService extends TelegramLongPollingBot {
         replyKeyboardMarkup.setKeyboard(keyboardRowList);
         return replyKeyboardMarkup;
     }
+
+    private InlineKeyboardMarkup getInlineKeyboard () {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List <InlineKeyboardButton> inlineKeyboardButtonList = new ArrayList<>();
+
+        InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton("Перейти до каталогу");
+        inlineKeyboardButton.setUrl("https://sites.google.com/view/freshgreenery-pp-ua/");
+
+        inlineKeyboardButtonList.add(inlineKeyboardButton);
+        inlineKeyboardMarkup.setKeyboard(Collections.singletonList(inlineKeyboardButtonList));
+
+        return inlineKeyboardMarkup;
+    }
+
+
 }
