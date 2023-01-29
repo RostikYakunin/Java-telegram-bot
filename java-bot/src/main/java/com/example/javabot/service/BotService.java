@@ -2,7 +2,6 @@ package com.example.javabot.service;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -19,7 +18,9 @@ import java.util.List;
 
 @Component
 public class BotService extends TelegramLongPollingBot {
-    private SendMessage messageForMe;
+    private SendMessage messageForAdmin;
+    private SendMessage sendMessageToUser;
+    private Message messageFromUser;
 
     @Override
     public String getBotUsername() {
@@ -33,84 +34,106 @@ public class BotService extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        SendMessage sendMessage = new SendMessage();
-        Message messageFromUser = update.getMessage();
+        sendMessageToUser = new SendMessage();
+        messageFromUser = update.getMessage();
 
-        sendMessage.setChatId(String.valueOf(messageFromUser.getChatId()));
+        sendMessageToUser.setChatId(String.valueOf(messageFromUser.getChatId()));
 
         // action in start
         if (messageFromUser.getText().equals("/start")) {
-
-            String helloText = "Привіт " + messageFromUser.getFrom().getFirstName() + " " + " мене зовуть FreshBot і я радий вас привітати))) \n"
-                    + "На даний час я можу вам надати: \n \n" +
-                    "1. Каталог товарів \n" +
-                    "2. Посилання на інстаграм \n" +
-                    "3. Контакти \n" +
-                    "4. Акції \n \n";
-
-            helloText += "Якщо є якісь запитання то можешь написати до адміністрації в інстаграмм " +
-                    "або в особисті повідомлення у телеграм за номером який знайдете у контактах ! ";
-
-            sendMessage.setText(helloText);
-            sendMessage.enableMarkdown(true);
-            sendMessage.setReplyMarkup(getKeyboard());
+            getGreetingMessageAndEnableKeyboard(sendMessageToUser, messageFromUser);
         }
 
         // button action list products
         else if (messageFromUser.getText().equals("Каталог товарів")) {
-            sendMessage.setText("Перейдіть по посиланню вказаному нижче");
-            sendMessage.setReplyMarkup(getInlineKeyboard());
+            getReferenceToSite(sendMessageToUser);
         }
 
-        // button action list products
+        // button action contacts
         else if (messageFromUser.getText().equals("Наші контакти")) {
-            sendMessage.setText("email: fresh.greeneery.ua@gmail.com \n" +
-                    "моб.тел: +38 095 752 08 25 \n" +
-                    "Username адміністрації у телеграмм: @Dev_Fresh ");
+            getContacts(sendMessageToUser);
         }
 
-        // button action list products
+        // button action instagram reference
         else if (messageFromUser.getText().equals("Інстаграмм")) {
-            String message = "https://www.instagram.com/fresh_greenery.ua \n";
-            message += "На цій інстаграм сторінці ви знайдете найсвіжіші новини, актуальний список товарів та послуг";
-
-            sendMessage.setText(message);
+            getInstagramReference(sendMessageToUser);
         }
 
-        // button action list products
+        // button action promotions
         else if (messageFromUser.getText().equals("Акції")) {
-            sendMessage.setText("На даний час акції відсутні");
+            getPromotions(sendMessageToUser);
         }
 
-        // any other message
+        // user`s input messages
         else {
-            sendMessage.setText("Привіт " + messageFromUser.getFrom().getFirstName() + " ми отримали твоє повідомлення: "
-                    + messageFromUser.getText() + "\n" + "Ви скоро отримаєте відповідь від адміна)");
-
-            String text = ("==================================================" +
-                    "\n You have got a message: " + messageFromUser.getText() +
-                    "\n from user: " + messageFromUser.getFrom().getUserName() +
-                    "\n first name: " + messageFromUser.getFrom().getFirstName() +
-                    "\n last name: " + messageFromUser.getFrom().getLastName() +
-                    "\n user`s id: " + messageFromUser.getFrom().getId() +
-                    "\n message`s time: " + Instant.now() +
-                    "\n==================================================");
-
-            messageForMe = new SendMessage();
-            messageForMe.setChatId(String.valueOf(5699067150L));
-            messageForMe.setText(text);
+            sendMessageToAdmin(sendMessageToUser, messageFromUser);
         }
 
         // only execute
         try {
-            execute(sendMessage);
-            if (messageForMe != null) {
-                execute(messageForMe);
+            execute(sendMessageToUser);
+
+            if (messageForAdmin != null) {
+                execute(messageForAdmin);
             }
 
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void sendMessageToAdmin(SendMessage sendMessage, Message messageFromUser) {
+        sendMessage.setText("Привіт " + messageFromUser.getFrom().getFirstName() + " ми отримали твоє повідомлення: "
+                + messageFromUser.getText() + "\n" + "Ви скоро отримаєте відповідь від адміна)");
+
+        String text = ("==================================================" +
+                "\n You have got a message: " + messageFromUser.getText() +
+                "\n from user: " + messageFromUser.getFrom().getUserName() +
+                "\n first name: " + messageFromUser.getFrom().getFirstName() +
+                "\n last name: " + messageFromUser.getFrom().getLastName() +
+                "\n user`s id: " + messageFromUser.getFrom().getId() +
+                "\n message`s time: " + Instant.now() +
+                "\n==================================================");
+
+        messageForAdmin = new SendMessage();
+        messageForAdmin.setChatId(String.valueOf(5699067150L));
+        messageForAdmin.setText(text);
+    }
+
+    private void getPromotions(SendMessage sendMessage) {
+        sendMessage.setText("На даний час акції відсутні");
+    }
+
+    private void getInstagramReference(SendMessage sendMessage) {
+        String message = "На цій інстаграм сторінці ви знайдете найсвіжіші новини, список товарів та послуг";
+        sendMessage.setText(message);
+        sendMessage.setReplyMarkup(getInlineKeyboardForInstagram());
+    }
+
+    private void getContacts(SendMessage sendMessage) {
+        sendMessage.setText("email: fresh.greeneery.ua@gmail.com \n" +
+                "моб.тел: +38 095 752 08 25 \n" +
+                "Username адміністрації у телеграмм: @Dev_Fresh ");
+    }
+
+    private void getReferenceToSite(SendMessage sendMessage) {
+        sendMessage.setText("Перейдіть по посиланню вказаному нижче");
+        sendMessage.setReplyMarkup(getInlineKeyboardForCatalog());
+    }
+
+    private void getGreetingMessageAndEnableKeyboard(SendMessage sendMessage, Message messageFromUser) {
+        String helloText = "Привіт " + messageFromUser.getFrom().getFirstName() + " " + " мене зовуть FreshBot і я радий вас привітати))) \n"
+                + "На даний час я можу вам надати: \n \n" +
+                "1. Каталог товарів \n" +
+                "2. Посилання на інстаграм \n" +
+                "3. Контакти \n" +
+                "4. Акції \n \n";
+
+        helloText += "Якщо є якісь запитання то можешь написати мені, я передам твої запитання та пропозиції до адміністрації, а вони тобі відпишуться" ;
+
+        sendMessage.setText(helloText);
+        sendMessage.enableMarkdown(true);
+        sendMessage.setReplyMarkup(getKeyboard());
     }
 
     // Keyboard for bot
@@ -143,18 +166,40 @@ public class BotService extends TelegramLongPollingBot {
         return replyKeyboardMarkup;
     }
 
-    private InlineKeyboardMarkup getInlineKeyboard() {
+    private InlineKeyboardMarkup getInlineKeyboardForCatalog() {
+        // new inline keyboard
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         List<InlineKeyboardButton> inlineKeyboardButtonList = new ArrayList<>();
 
+        // new inline button
         InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton("Перейти до каталогу");
         inlineKeyboardButton.setUrl("https://sites.google.com/view/freshgreenery-pp-ua/");
 
+        // add to list
         inlineKeyboardButtonList.add(inlineKeyboardButton);
+
+        // add to keyboard markup
         inlineKeyboardMarkup.setKeyboard(Collections.singletonList(inlineKeyboardButtonList));
 
         return inlineKeyboardMarkup;
     }
 
+    private InlineKeyboardMarkup getInlineKeyboardForInstagram() {
+        // new inline keyboard
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        List<InlineKeyboardButton> inlineKeyboardButtonList = new ArrayList<>();
+
+        // new inline button
+        InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton("Перейти до Instagram");
+        inlineKeyboardButton.setUrl("https://www.instagram.com/fresh_greenery.ua");
+
+        // add to list
+        inlineKeyboardButtonList.add(inlineKeyboardButton);
+
+        // add to keyboard markup
+        inlineKeyboardMarkup.setKeyboard(Collections.singletonList(inlineKeyboardButtonList));
+
+        return inlineKeyboardMarkup;
+    }
 
 }
