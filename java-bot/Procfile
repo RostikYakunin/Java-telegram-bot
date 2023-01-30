@@ -1,2 +1,0 @@
-worker: java -jar target/*.jar
-scale web=1
