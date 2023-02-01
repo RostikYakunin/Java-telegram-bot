@@ -34,6 +34,7 @@ public class BotService extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        messageForAdmin = new SendMessage();
         sendMessageToUser = new SendMessage();
         messageFromUser = update.getMessage();
 
@@ -95,7 +96,6 @@ public class BotService extends TelegramLongPollingBot {
                 "\n message`s time: " + Instant.now() +
                 "\n==================================================");
 
-        messageForAdmin = new SendMessage();
         messageForAdmin.setChatId(String.valueOf(5699067150L));
         messageForAdmin.setText(text);
     }
